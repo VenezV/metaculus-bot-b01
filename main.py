@@ -46,10 +46,12 @@ dotenv.load_dotenv()
 logger = logging.getLogger(__name__)
 
 # Keys pasted into GitHub Secrets can carry a stray space or line break,
-# which breaks the HTTP header ("Invalid leading whitespace ... 'Token ***'").
+# even in the middle, which breaks the HTTP header ("Invalid leading
+# whitespace ... 'Token ***'"). These keys never contain whitespace, so all
+# of it is removed.
 for _key_name in ("METACULUS_TOKEN", "ANTHROPIC_API_KEY"):
     if os.environ.get(_key_name):
-        os.environ[_key_name] = os.environ[_key_name].strip()
+        os.environ[_key_name] = "".join(os.environ[_key_name].split())
 
 
 class FallTemplateBot2026(ForecastBot):
