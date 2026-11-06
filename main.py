@@ -717,7 +717,9 @@ if __name__ == "__main__":
     # to stay within a ~10 CHF/month budget until free credits are available.
     # Helpers are pinned to Claude Haiku 5.5: the installed forecasting-tools
     # otherwise falls back to an outdated model (claude-3-5-sonnet-20241022).
-    # The researcher keeps the package default (Metaculus proxy) for now.
+    # The researcher is Claude Haiku 5.5 with Claude's own web search: the
+    # package default (the Metaculus proxy) gave "Connection error" on
+    # 2026-11-06 for this account.
     template_bot = FallTemplateBot2026(
         research_reports_per_question=1,
         predictions_per_research_report=1,
@@ -738,6 +740,12 @@ if __name__ == "__main__":
             ),
             "parser": GeneralLlm(
                 model="anthropic/claude-haiku-5-5", temperature=None, timeout=60
+            ),
+            "researcher": GeneralLlm(
+                model="anthropic/claude-haiku-5-5",
+                temperature=None,
+                timeout=180,
+                web_search_options={"search_context_size": "medium"},
             ),
         },
     )
