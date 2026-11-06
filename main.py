@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import logging
+import os
 from datetime import datetime, timezone
 from typing import Literal
 
@@ -43,6 +44,12 @@ from forecasting_tools import (
 
 dotenv.load_dotenv()
 logger = logging.getLogger(__name__)
+
+# Keys pasted into GitHub Secrets can carry a stray space or line break,
+# which breaks the HTTP header ("Invalid leading whitespace ... 'Token ***'").
+for _key_name in ("METACULUS_TOKEN", "ANTHROPIC_API_KEY"):
+    if os.environ.get(_key_name):
+        os.environ[_key_name] = os.environ[_key_name].strip()
 
 
 class FallTemplateBot2026(ForecastBot):
@@ -706,8 +713,9 @@ if __name__ == "__main__":
 
     # B-01 baseline (2026-11-06): Claude Opus 5.5, one forecast per question,
     # to stay within a ~10 CHF/month budget until free credits are available.
-    # Purposes not listed in `llms` (summarizer, researcher, parser) keep
-    # forecasting-tools' defaults for the keys that are set.
+    # Helpers are pinned to Claude Haiku 5.5: the installed forecasting-tools
+    # otherwise falls back to an outdated model (claude-3-5-sonnet-20241022).
+    # The researcher keeps the package default (Metaculus proxy) for now.
     template_bot = FallTemplateBot2026(
         research_reports_per_question=1,
         predictions_per_research_report=1,
@@ -722,6 +730,12 @@ if __name__ == "__main__":
                 temperature=None,  # Claude Opus 5.5 does not accept temperature
                 timeout=160,
                 allowed_tries=2,
+            ),
+            "summarizer": GeneralLlm(
+                model="anthropic/claude-haiku-5-5", temperature=None, timeout=60
+            ),
+            "parser": GeneralLlm(
+                model="anthropic/claude-haiku-5-5", temperature=None, timeout=60
             ),
         },
     )
