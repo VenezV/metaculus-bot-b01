@@ -704,28 +704,26 @@ if __name__ == "__main__":
     publish_to_metaculus = True
     print_startup_banner(run_mode, will_publish=publish_to_metaculus)
 
-    # Configure the bot. The `llms=` block below is commented out to use
-    # whichever default models forecasting-tools picks based on your env vars;
-    # uncomment and edit to pin specific models.
+    # B-01 baseline (2026-11-06): Claude Opus 5.5, one forecast per question,
+    # to stay within a ~10 CHF/month budget until free credits are available.
+    # Purposes not listed in `llms` (summarizer, researcher, parser) keep
+    # forecasting-tools' defaults for the keys that are set.
     template_bot = FallTemplateBot2026(
         research_reports_per_question=1,
-        predictions_per_research_report=5,
+        predictions_per_research_report=1,
         use_research_summary_to_forecast=False,
         publish_reports_to_metaculus=publish_to_metaculus,
         folder_to_save_reports_to=None,
         skip_previously_forecasted_questions=True,
         extra_metadata_in_explanation=True,
-        # llms={
-        #     "default": GeneralLlm(
-        #         model="openrouter/openai/gpt-4o",
-        #         temperature=0.3,
-        #         timeout=40,
-        #         allowed_tries=2,
-        #     ),
-        #     "summarizer": "openai/gpt-4o-mini",
-        #     "researcher": "asknews/news-summaries",
-        #     "parser": "openai/gpt-4o-mini",
-        # },
+        llms={
+            "default": GeneralLlm(
+                model="anthropic/claude-opus-5-5",
+                temperature=None,  # Claude Opus 5.5 does not accept temperature
+                timeout=160,
+                allowed_tries=2,
+            ),
+        },
     )
 
     # Per-mode tournament URL shown in the summary banner footer. These
